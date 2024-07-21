@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jessup Cellars Chatbot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: black;
+            background-image: url('/static/image.png');
+            background-size: cover;
+            background-position: left;
+            overflow: hidden;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(138, 43, 226, 0.6);
+            opacity: 0.7;
+            animation: float 5s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0);
+            }
+            50% {
+                transform: translateY(-20px) translateX(20px);
+            }
+            100% {
+                transform: translateY(0) translateX(0);
+            }
+        }
+
+        .bubble:nth-child(1) {
+            width: 50px;
+            height: 50px;
+            top: 20%;
+            left: 10%;
+            animation-duration: 6s;
+        }
+
+        .bubble:nth-child(2) {
+            width: 80px;
+            height: 80px;
+            top: 50%;
+            left: 25%;
+            animation-duration: 7s;
+        }
+
+        .bubble:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 70%;
+            left: 40%;
+            animation-duration: 8s;
+        }
+
+        .bubble:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 30%;
+            left: 70%;
+            animation-duration: 9s;
+        }
+
+        .bubble:nth-child(5) {
+            width: 40px;
+            height: 40px;
+            top: 80%;
+            left: 80%;
+            animation-duration: 10s;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .response-time {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-start h-screen">
+    <div class="w-full max-w-5xl mt-4 flex justify-start">
+        <h1 class="text-4xl font-bold text-purple-700">Jessup Cellars Chatbot</h1>
+    </div>
+    <div class="bg-black shadow-lg w-10/12 max-w-5xl h-5/6 flex flex-col mt-4 border border-purple-800 relative">
+        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-800">
+            <!-- Chat messages will be appended here -->
+        </div>
+        <div class="border-t p-4 flex bg-black items-center">
+            <input type="text" id="question" name="question" placeholder="Ask a question.." required class="flex-1 p-2 border border-gray-700 rounded-l-none bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-purple-600">
+            <button type="submit" id="submit-btn" class="bg-purple-700 text-white px-4 py-2 rounded-none hover:bg-purple-800">Submit</button>
+            <div id="loading-spinner" class="loading-spinner hidden ml-4"></div>
+        </div>
+    </div>
+    <div class="response-time" id="response-time">
+        <!-- Response time will be displayed here -->
+    </div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(function() {
+            $('#submit-btn').on('click', function(e) {
+                e.preventDefault();
+                var question = $('#question').val();
+                if (question) {
+                    appendMessage('user', question);
+                    $('#loading-spinner').removeClass('hidden');
+                    appendTypingIndicator();
+
+                    $.ajax({
+                        url: '/ask',
+                        method: 'POST',
+                        data: { question: question },
+                        success: function(response) {
+                            $('#loading-spinner').addClass('hidden');
+                            removeTypingIndicator();
+                            appendMessage('bot', response.answer);
+                            $('#response-time').text(`Groq response time: ${response.response_time.toFixed(2)} seconds`);
+                        },
+                        error: function() {
+                            $('#loading-spinner').addClass('hidden');
+                            removeTypingIndicator();
+                            appendMessage('bot', 'Sorry, something went wrong. Please try again.');
+                        }
+                    });
+                    $('#question').val('');
+                }
+            });
+        });
+
+        function appendMessage(sender, text) {
+            var messageElement = `
+                <div class="flex ${sender === 'user' ? 'justify-end' : 'justify-start'}">
+                    <div class="p-3 rounded-lg max-w-xs ${sender === 'user' ? 'bg-purple-700 text-white' : 'bg-gray-300 text-black'}">
+                        ${text}
+                    </div>
+                </div>
+            `;
+            $('#chat-messages').append(messageElement);
+            $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+        }
+
+        function appendTypingIndicator() {
+            var typingElement = `
+                <div id="typing-indicator" class="flex justify-start">
+                    <div class="p-3 rounded-lg max-w-xs bg-gray-300 text-black">
+                        Typing...
+                    </div>
+                </div>
+            `;
+            $('#chat-messages').append(typingElement);
+            $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+        }
+
+        function removeTypingIndicator() {
+            $('#typing-indicator').remove();
+        }
+    </script>
+</body>
+</html>

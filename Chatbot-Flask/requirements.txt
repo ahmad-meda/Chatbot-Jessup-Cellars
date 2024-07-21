@@ -1,0 +1,9 @@
+python-dotenv 
+flask 
+flask-session 
+langchain_groq 
+langchain_community 
+langchain_core 
+pymupdf 
+faiss-cpu 
+transformers
