@@ -12,7 +12,7 @@ This application is implemented using python.One is a flask application and anot
 
 1. **Clone the repository**:
     ```sh
-    git clone https://github.com/ahmad-meda/jessup-cellars-chatbot.git
+    git clone https://github.com/ahmad-meda/Chatbot-Jessup-Cellars/tree/main
     cd jessup-cellars-chatbot
     ```
 
